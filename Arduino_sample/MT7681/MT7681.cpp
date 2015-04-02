@@ -158,9 +158,11 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
       
       str = String("+WCAP:") + ssid;
       
-      str = _wait_for(str.c_str(), 20);
+      str = _wait_for(str.c_str(),50);
+       Serial.println(str);
       if(str.length() != 0)
       {
+       
         return true;
       }
       return false;
@@ -354,9 +356,12 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
     }
   }
   
-  String LC7681Wifi::_wait_for(const char* pattern, int timeout)
+  String LC7681Wifi::_wait_for(const char* pattern, unsigned int timeout)
   {
     unsigned long _timeout = millis() + timeout*1000;
+    Serial.println(millis());
+    Serial.print("==>");
+    Serial.println(_timeout);
     char buf[128];
     int i, c;
     
