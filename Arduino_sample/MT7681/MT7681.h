@@ -30,12 +30,12 @@ public:
 
 private:
   String _wait_for(const char* pattern, unsigned int timeout = 300);
-
-private:
+  int freeRam();
+private: 
   Stream *m_stream;
   Stream *m_log;
   
   int m_lport;
   int m_bufferPos;
-  char m_buffer[128];
+  char m_buffer[70];
 };
