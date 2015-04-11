@@ -223,7 +223,7 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
       result = F("AT+WDNL=");
       result += server;
       m_stream->println(result);
-      Serial.println(result);
+      //Serial.println(result);
       result = _wait_for("+WDNL:", 5);
       if(result.length() == 0)
       return IPAddress();
@@ -234,10 +234,11 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
 
     bool LC7681Wifi::connect(IPAddress ip, int port, bool udp )
     {
-      char buf[16];
+      char buf[20];
       String AT = String(ip[0])+"." +String(ip[1])+"." +String(ip[2])+"." +String(ip[3]);
-      AT.reserve(AT.length());
-      AT.toCharArray(buf, AT.length());
+     // Serial.println(ip[3]);
+      //AT.reserve(AT.length());
+      AT.toCharArray(buf, AT.length()+1);
 
         //sprintf(buf, "AT+WSW=%d,", m_lport);
       
@@ -255,8 +256,8 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
     str += ",";
     str += udp ? "1" : "0";
     m_stream->println(str);
-    
-    str = _wait_for("+WSO:");
+    Serial.println(str);
+    str = _wait_for("+WSO:",30);
     if(str.length() == 0)
       return false;
     
@@ -266,8 +267,8 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
       
     str = "+WSS:";
     str += m_lport;
-    str = _wait_for(str.c_str(),60);
-
+    str = _wait_for(str.c_str(),30);
+    Serial.println(str);
     if(str.length() == 0)
     {
      
@@ -304,11 +305,14 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
       while(remain > 0)
       {
         int part = remain > 48 ? 48 : remain;
-        String AT = F("AT+WSW");
+        String AT = F("AT+WSW=");
         
         
         AT = AT +String(m_lport);
-        AT.toCharArray(buf, AT.length());
+        AT = AT +',';
+        //Serial.println(AT);
+        AT.toCharArray(buf, AT.length()+1);
+        //Serial.println(buf);
         //sprintf(buf, "AT+WSW=%d,", m_lport);
         dest = buf + strlen(buf);
         base64_encode((uint8_t*)src, part, (uint8_t*)dest);
@@ -318,13 +322,18 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
         dest[2] = 0;
         
         m_stream->print(buf);
+        Serial.print(buf);
         src+=part;
         remain-=part;
 
         String str = _wait_for("+WSDS:",30);
+       // Serial.print("Get:");
+        //Serial.println(str);
+        while(str.length() == 0){
+          m_stream->print(buf);
+          String str = _wait_for("+WSDS:",30);
+        }
        
-        if(str.length() == 0)
-        return false;
       }    
       return true;
     }
@@ -423,6 +432,9 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
     i = 0;
     while(millis() <= _timeout)
     {
+    //  while(Serial.available()){
+    //        Serial1.write(Serial.read());
+    //  }
       while(m_stream->available())
       {
         c = m_stream->read();
