@@ -148,26 +148,36 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
     
     bool LC7681Wifi::connectAP(const char* ssid, const char* key,int type)
     {
-      String str = F("AT+WCAP=");
+      /*String str = F("AT+WCAP=");
       str += String(ssid);
       str += ",";
       str += String(key);
       str += ",";
       str += String(type);
-      m_stream->println(str);
+      */
+
+      m_stream->print(F("AT+WCAP="));
+      m_stream->print(ssid);
+      m_stream->print(F(","));
+      m_stream->print(key);
+      m_stream->print(F(","));
+      m_stream->println(type);
+      
+     /* if(m_log){
+      m_log->print("[Send cmd]");
+      m_log->println(str);
+      }*/
+      String str = String("+WCAP:") + String(ssid);
       if(m_log){
-      //m_log->print("[Send cmd]");
-      //m_log->println(str);
-      }
-      str = String("+WCAP:") + String(ssid);
-      if(m_log){
-      //m_log->print("[Wait for]");
-      //m_log->println(str);
+      m_log->print("[Wait for]");
+      m_log->println(str);
       }
       if(_wait_for(str.c_str(),50) != 0)
       {
         return true;
       }
+      m_log->print("[Wait out]");
+      m_log->println(_wait_for(str.c_str(),50));
       return false;
     }
     
@@ -177,22 +187,22 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
       String ipaddress(0);
       int count = 0;
 
-    //  Serial.print("INTPUT IP:");
-    //  Serial.print(str);
-     // Serial.print(" Size:");
-     // Serial.println(strlen(str));
-      for (int i = 0; i <= strlen(str); ++i)
+    //  //Serial.print("INTPUT IP:");
+    //  //Serial.print(str);
+     // //Serial.print(" Size:");
+     // //Serial.println(strlen(str));
+    /*  for (int i = 0; i <= strlen(str); ++i)
       { 
-      //  Serial.print(i);
-      //  Serial.println(str[i]);
+      //  //Serial.print(i);
+      //  //Serial.println(str[i]);
         if(str[i]=='.' || i==strlen(str)){
-                 // Serial.print("GET .");
-              //    Serial.print(ipaddress);
+                 // //Serial.print("GET .");
+              //    //Serial.print(ipaddress);
                   ip[count]=ipaddress.toInt();
-                //  Serial.print("=>");
-               //   Serial.print(count);
-               //   Serial.print("=>");
-                //  Serial.println(ip[count]);
+                //  //Serial.print("=>");
+               //   //Serial.print(count);
+               //   //Serial.print("=>");
+                //  //Serial.println(ip[count]);
                   ipaddress = "";
                   count++;
         }
@@ -201,7 +211,8 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
 
         }
       }
-      //sscanf(str, "%d.%d.%d.%d", ip, ip+1, ip+2, ip+3);
+      */
+      sscanf(str, "%d.%d.%d.%d", ip, ip+1, ip+2, ip+3);
       return IPAddress(ip[0], ip[1], ip[2], ip[3]);
     }
     
@@ -223,7 +234,7 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
       result = F("AT+WDNL=");
       result += server;
       m_stream->println(result);
-      //Serial.println(result);
+      ////Serial.println(result);
       result = _wait_for("+WDNL:", 5);
       if(result.length() == 0)
       return IPAddress();
@@ -236,7 +247,7 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
     {
       char buf[20];
       String AT = String(ip[0])+"." +String(ip[1])+"." +String(ip[2])+"." +String(ip[3]);
-     // Serial.println(ip[3]);
+     // //Serial.println(ip[3]);
       //AT.reserve(AT.length());
       AT.toCharArray(buf, AT.length()+1);
 
@@ -256,7 +267,7 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
     str += ",";
     str += udp ? "1" : "0";
     m_stream->println(str);
-    Serial.println(str);
+    //Serial.println(str);
     str = _wait_for("+WSO:",30);
     if(str.length() == 0)
       return false;
@@ -268,7 +279,7 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
     str = "+WSS:";
     str += m_lport;
     str = _wait_for(str.c_str(),30);
-    Serial.println(str);
+    //
     if(str.length() == 0)
     {
      
@@ -310,9 +321,9 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
         
         AT = AT +String(m_lport);
         AT = AT +',';
-        //Serial.println(AT);
+        ////Serial.println(AT);
         AT.toCharArray(buf, AT.length()+1);
-        //Serial.println(buf);
+        ////Serial.println(buf);
         //sprintf(buf, "AT+WSW=%d,", m_lport);
         dest = buf + strlen(buf);
         base64_encode((uint8_t*)src, part, (uint8_t*)dest);
@@ -322,16 +333,16 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
         dest[2] = 0;
         
         m_stream->print(buf);
-        Serial.print(buf);
+        //Serial.print(buf);
         src+=part;
         remain-=part;
 
         String str = _wait_for("+WSDS:",30);
-       // Serial.print("Get:");
-        //Serial.println(str);
+       // //Serial.print("Get:");
+        ////Serial.println(str);
         while(str.length() == 0){
           m_stream->print(buf);
-          String str = _wait_for("+WSDS:",30);
+          str = _wait_for("+WSDS:",30);
         }
        
       }    
@@ -422,19 +433,19 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
   
    String LC7681Wifi::_wait_for(const char* pattern, unsigned int timeout)
   {
-    unsigned long _timeout = millis() + timeout*1000;
+    unsigned long _timeout = millis() + timeout*10000;
     char buf[128];
     int i, c;
-    
+    //Serial.println(_timeout);
+    //Serial.println(millis());
+    //Serial.println(timeout);
     if(m_log)
       m_log->println("[wait_for]");
     
     i = 0;
     while(millis() <= _timeout)
     {
-    //  while(Serial.available()){
-    //        Serial1.write(Serial.read());
-    //  }
+  
       while(m_stream->available())
       {
         c = m_stream->read();
