@@ -29,7 +29,7 @@ public:
   void process(LC7681WifiCallback cb);
 
 private:
-  String _wait_for(const char* pattern, unsigned int timeout = 300);
+  String _wait_for(const char* pattern,uint32_t timeout = 300);
   int freeRam();
 private: 
   Stream *m_stream;

@@ -148,36 +148,35 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
     
     bool LC7681Wifi::connectAP(const char* ssid, const char* key,int type)
     {
-      /*String str = F("AT+WCAP=");
+      String str = F("AT+WCAP=");
       str += String(ssid);
       str += ",";
       str += String(key);
       str += ",";
       str += String(type);
-      */
-
+       m_stream->println(str);
+/*
       m_stream->print(F("AT+WCAP="));
       m_stream->print(ssid);
       m_stream->print(F(","));
       m_stream->print(key);
       m_stream->print(F(","));
       m_stream->println(type);
-      
-     /* if(m_log){
+     */ 
+      if(m_log){
       m_log->print("[Send cmd]");
       m_log->println(str);
-      }*/
-      String str = String("+WCAP:") + String(ssid);
+      }
+      str = String("+WCAP:") + String(ssid);
       if(m_log){
       m_log->print("[Wait for]");
       m_log->println(str);
       }
-      if(_wait_for(str.c_str(),50) != 0)
+      if(_wait_for(str.c_str(),160) != 0)
       {
         return true;
       }
-      m_log->print("[Wait out]");
-      m_log->println(_wait_for(str.c_str(),50));
+  
       return false;
     }
     
@@ -316,33 +315,32 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
       while(remain > 0)
       {
         int part = remain > 48 ? 48 : remain;
+
         String AT = F("AT+WSW=");
-        
-        
         AT = AT +String(m_lport);
         AT = AT +',';
-        ////Serial.println(AT);
         AT.toCharArray(buf, AT.length()+1);
-        ////Serial.println(buf);
-        //sprintf(buf, "AT+WSW=%d,", m_lport);
         dest = buf + strlen(buf);
         base64_encode((uint8_t*)src, part, (uint8_t*)dest);
         dest+= base64_encode_len(part);
         dest[0] = '\r';
         dest[1] = '\n';
         dest[2] = 0;
-        
+
         m_stream->print(buf);
-        //Serial.print(buf);
         src+=part;
         remain-=part;
 
         String str = _wait_for("+WSDS:",30);
-       // //Serial.print("Get:");
-        ////Serial.println(str);
+        int count = 0;
         while(str.length() == 0){
+          count++;
           m_stream->print(buf);
           str = _wait_for("+WSDS:",30);
+          if (count>3)
+          {
+            return false;/* code */
+          }
         }
        
       }    
@@ -401,15 +399,18 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
               if(m_log && data.length() != len)
               {
                 m_log->print("[Warning] length not matching:");
-                m_log->print(len);
-                m_log->print(data.length());
+                m_log->println(len);
+                m_log->println(data.length());
                 m_log->println(data);
-              }
 
+              }
+            
+           else{
             // use m_buffer as temp buffer
             t1 = base64_decode((const uint8_t*)data.c_str(), len, (uint8_t*)m_buffer);
             m_buffer[t1] = 0;
             cb(EVENT_DATA_RECEIVED, (uint8_t*)m_buffer, t1);
+          }
           }
         }
         else if(!strncmp(m_buffer, "+WSS:", 5))
@@ -426,14 +427,26 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
             m_lport = 0;
           }
         }
-        
+       /* else if(!strncmp(m_buffer, "+WCAP:", 6))
+        {
+            String s = m_buffer+6;
+            if(s.substring(7)==""){
+            cb(EVENT_AP_DISCONNECT, NULL, 0);
+
+            }
+
+            
+            
+          
+        }
+        */
       }
     }
   }
   
-   String LC7681Wifi::_wait_for(const char* pattern, unsigned int timeout)
+   String LC7681Wifi::_wait_for(const char* pattern,  uint32_t  timeout)
   {
-    unsigned long _timeout = millis() + timeout*10000;
+    unsigned long _timeout = millis() + timeout*1000;
     char buf[128];
     int i, c;
     //Serial.println(_timeout);
@@ -451,9 +464,13 @@ static int base64_decode(const uint8_t* src, int len, uint8_t* dest)
         c = m_stream->read();
         if(m_log)
           m_log->write(c);
-
+        
         buf[i] = (char)c;
         i++;
+        if (i>100)  //prevent overflow
+        {
+          i=0;
+        }
         if(c == '\n')
         {
           buf[i] = 0;
