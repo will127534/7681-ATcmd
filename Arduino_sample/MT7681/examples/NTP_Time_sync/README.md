@@ -14,7 +14,7 @@ LinkIt Connect 7681 Demo
 (以下都用 Leonardo 來作)
 
 接線照著圖來作
-![revolunet logo](http://i.imgur.com/tMLCym9.jpg "revolunet logo")
+![revolunet logo](http://i.imgur.com/pWL6lH9.jpg "revolunet logo")
  
 
 	7681 的 RX 接到 Arduino TX
