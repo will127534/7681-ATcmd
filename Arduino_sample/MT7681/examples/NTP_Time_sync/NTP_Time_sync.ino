@@ -5,8 +5,8 @@
 LC7681Wifi wifi(&Serial1);
 
 
-const char ssid[] = "HTC";
-const char key[] = "0988340543";
+const char ssid[] = "";
+const char key[] = "";
 const char server[] = "time.nist.gov";//tick.stdtime.gov.tw
 const int port = 123;
 
