@@ -7,7 +7,7 @@ LC7681Wifi wifi(&Serial1);
 
 const char ssid[] = "";
 const char key[] = "";
-const char server[] = "www.google.com";
+const char server[] = "www.arduino.cc";
 const int port = 80;
 
 
@@ -21,15 +21,21 @@ void setup() {
   Serial1.begin(115200);
   while(!Serial)
     delay(100);
-
-  
   // reset module
   Serial.print("[log] Resetting Module...");
-  pinMode(RST, OUTPUT);
   digitalWrite(RST, LOW);
-  delay(100);
+  delay(1000);
   digitalWrite(RST, HIGH);
-  delay(7000);
+  while(1){
+    if(Serial1.available()){
+    char c = Serial1.read(); 
+  //Serial.write(c);
+    if(c=='<'){
+       break;
+      }
+    }
+  }
+  delay(1000);
   Serial.println("done");
   
   wifi.begin();
@@ -78,8 +84,8 @@ void setup() {
   
   Serial.println("[log] Send HTTP request");
   // Make a HTTP request:
-  wifi.println("GET /search?q=arduino HTTP/1.1");
-  wifi.println("Host: www.google.com");
+  wifi.println("GET /asciilogo.txt HTTP/1.1");
+  wifi.println("Host: www.arduino.cc");
   //wifi.println("Connection: close");
   wifi.println();
 }
