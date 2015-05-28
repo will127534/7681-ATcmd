@@ -28,7 +28,23 @@ LinkIt Connect 7681 Demo
 ##軟體的部分
 
  - 1.首先要更新韌體, [到這裡](https://github.com/will127534/7681-ATcmd) 下載二個 bin 檔和 7681 uploader 程式, 
-把 Arduino 更新成 Serial bypass 的模式 (在這裡下載並upload sketch ), 它的作用是把二個 UART 互串, 讓我們能透過 Arduino 對電腦的 COM port 和 7681 講話
+把 Arduino 更新成 Serial bypass 的模式
+```
+void setup() {
+  Serial.begin(115200);
+  Serial1.begin(115200);
+}
+
+void loop() {
+ while(Serial.available()){
+  Serial1.write(Serial.read()); 
+ }
+ while(Serial1.available()){
+  Serial.write(Serial1.read()); 
+ }
+}
+```
+它的作用是把二個 UART 互串, 讓我們能透過 Arduino 對電腦的 COM port 和 7681 講話
 使用 7681 uploader 更新 bin 檔, 作法是在 command line 下輸入
 
 	> mt7681_uploader.exe -f MT7681_sta_header.bin -c COMX
@@ -49,7 +65,7 @@ LinkIt Connect 7681 Demo
 	> const char key[] = "";
 
    如果有RST接上的GPIO不是PIN13的話記得在修改RST這個變數
-   
+
  > int RST = 13;
 
  - 4.順利的話, 可以看到 RGB LED 開始根據時間而不斷的變化,也可以打開 Serial monitor 看到現在的時間
