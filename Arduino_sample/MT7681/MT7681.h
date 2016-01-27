@@ -26,16 +26,18 @@ public:
   bool print(const char* data, int dataLen);
   bool print(const char* data = NULL);
   bool println(const char* data = NULL);
+  bool listenTo(uint16_t port, bool udp);
   void process(LC7681WifiCallback cb);
 
+  Stream *m_stream;
 private:
   String _wait_for(const char* pattern,uint32_t timeout = 300);
   int freeRam();
 private: 
-  Stream *m_stream;
+  
   Stream *m_log;
   
-  int m_lport;
+  uint16_t m_lport;
   int m_bufferPos;
   char m_buffer[70];
 };
